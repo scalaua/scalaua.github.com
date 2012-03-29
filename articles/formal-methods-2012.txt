@@ -1,0 +1,33 @@
+Learning mathematical philosophy
+================================
+
+  By Benedict Eastaugh
+  <http://extralogical.net/articles/formal-methods-2012.html>
+  March  5, 2012
+
+The Bristol [Formal Methods Seminar] is aimed at teaching new postgraduates some
+of the formal methods used in much of modern philosophy. During the first term
+we've concentrated on logic: thus far the sessions have covered introductory set
+theory, basic metatheorems of first order logic, and the incompleteness of
+arithmetic. Next up are modal and temporal logic, while after Easter the focus
+will shift to formal epistemology and decision theory.
+
+Many of the handouts from these seminars have now been made available on the
+Munich Center for Mathematical Philosophy's website, in their section on
+[learning mathematical philosophy]. In particular, they have my handout on the
+[compactness and Löwenheim--Skolem theorems].
+
+Since the Formal Methods Seminar isn't a full-on logic course, I didn't have
+time to cover all of the material I would have liked to, and consequently the
+handout is somewhat incomplete. In particular the downwards Löwenheim--Skolem
+theorem is not proved, although of course the proof is available in any good
+logic textbook. I hope to correct this omission at some point, and if anyone has
+corrections or suggestions, please do [email me](mailto:benedict@eastaugh.net).
+
+[Formal Methods seminar]:
+  http://eis.bris.ac.uk/~rp3959/Richard_Pettigrews_homepage/Formal_Methods.html
+[learning mathematical philosophy]:
+  http://www.mcmp.philosophie.uni-muenchen.de/students/math/index.html
+[compactness and Löwenheim--Skolem theorems]:
+  http://www.mcmp.philosophie.uni-muenchen.de/students/math/metalogic-fm2012.pdf
+

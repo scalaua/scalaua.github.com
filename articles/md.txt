@@ -1,0 +1,35 @@
+Paper Trail
+===========
+
+  By Benedict Eastaugh
+  <http://extralogical.net/articles/md.html>
+  
+
+**Paper Trail** is a single-user publishing tool for [book reviews][books].
+It's written in [Ruby on Rails][rails], and the [source code][source] is
+available on GitHub, licensed under the GPL.
+
+Some rudimentary documentation is included in the `README` file. If you find any
+bugs, please let me know via the [GitHub issue tracker][bugs].
+
+URLify
+------
+
+[URLify][urlify] is a library extracted from Paper Trail for converting
+diacritical marks to unaccented equivalents, to assist with ASCII-safe URI
+creation. It also includes a utility method to remove subtitles. URLify is a
+Ruby gem, so to install it just run the following command. Depending on your
+system configuration, you may have to `sudo`.
+
+    gem install urlify
+
+URLify is released under the BSD license.
+
+  [books]:  http://books.extralogical.net
+  [rails]:  http://rubyonrails.org
+  [source]: http://github.com/beastaugh/papertrail
+  [intro]:  /2008/11/bookkeeping
+  [more]:   /taxon/paper-trail
+  [bugs]:   http://github.com/beastaugh/papertrail/issues
+  [urlify]: http://github.com/beastaugh/urlify
+

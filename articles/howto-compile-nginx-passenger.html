@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html><head>
+    <meta charset="utf-8">
+    <title>ScalaUA: How to compile your own Nginx and Passenger</title>
+    
+    <link rel="stylesheet" href="../css/main.css">
+    
+    <link rel="alternate" type="application/atom+xml" href="../articles.atom" title="Extralogical feed">
+
+<!--tracking-->
+</head><body>
+    <header id="header"><div class="wrapper">
+        <h1 id="title"><a href="../">Scala в Украине</a></h1>
+        
+        <ul id="navigation">
+            <li><a href="../meetups">Встречи</a></li>
+            <li><a href="../articles">Архив</a></li>
+            <li><a href="../about">О Скале</a></li>
+        </ul>
+    </div></header>
+    
+    <section id="main" class="wrapper">
+        <article>
+    <h1>How to compile your own Nginx and Passenger</h1>
+    
+    <p class="date">March 16, 2011. Last updated February 25, 2012</p>
+    
+    <p>Every few months I upgrade my server’s <a href="http://nginx.org">Nginx</a> and <a href="http://www.modrails.com">Passenger</a> installations, and whenever I do, it takes me a minute to remember how it all goes. This article explains how to compile them from scratch, and also how to upgrade either or both programs. My server runs Ubuntu 10.04, but it should be straightforward to modify these instructions to work on any Linux distribution or other POSIX-compliant operating system.</p>
+<h2 id="preamble">Preamble</h2>
+<p>Before we get going, a brief note on how Nginx and Passenger fit together. Nginx is a web server, much like <a href="http://httpd.apache.org/">Apache</a>. Passenger is an application server for web applications written in Ruby. Passenger provides an Nginx module, and the only way to add a module to Nginx is to compile it with that module, so even if you’re only upgrading or installing Passenger, you still need to recompile Nginx.</p>
+<p>This article is a guide to installing these two programs from scratch, but it’s also a guide to upgrading one or both. If you get lost at any point—if something happens which is outside the scope of this guide—then I strongly recommend taking a look at the Passenger <a href="http://www.modrails.com/documentation/Users%20guide%20Nginx.html">users guide</a>, which is admirably clear and comprehensive.</p>
+<p>The commands that follow need to be run as root. I’m the only admin on my system, so I just become root; if you prefer you can just prefix commands with <code>sudo</code>. Commands will be prefixed with the <code>$</code> character; anything else is output provided for expository purposes and should not be typed into your terminal.</p>
+<pre><code>$ su -</code></pre>
+<h2 id="installing-ruby">Installing Ruby</h2>
+<p>Passenger is a Ruby web server, so the first dependency you’ll need to install is <a href="http://www.ruby-lang.org">Ruby</a>. It should be available from your package manager; on Ubuntu you can use <code>apt-get</code>.</p>
+<pre><code>$ apt-get install ruby</code></pre>
+<p>I prefer to compile my own, but I shan’t cover that here. From here on in I’ll assume that you have a working, Passenger-compatible Ruby installation and <a href="http://rubygems.org/">Rubygems</a>. You’ll also need <code>wget</code> or <code>curl</code> to download files.</p>
+<h2 id="installing-other-dependencies">Installing other dependencies</h2>
+<p>Both Passenger and Nginx, as one would expect, have various dependencies. The list below is exhaustive for the configuration I outline, but if you compile more modules into Nginx then you may have to install additional prerequisites.</p>
+<pre><code>$ apt-get install build-essential libpcre3-dev libssl-dev zlib1g</code></pre>
+<p>Nginx’s HTTP rewrite module requires the <a href="http://www.pcre.org/">PCRE</a> library sources, so it can parse regular expressions in <code>location</code> directives. It also needs the <a href="http://openssl.org/">OpenSSL</a> header files for SSL support, and <a href="http://zlib.net/">zlib</a> so that responses can be compressed.</p>
+<h2 id="installing-the-passenger-gem">Installing the Passenger gem</h2>
+<p>Downloading and installing the Passenger library is extremely simple: just run</p>
+<pre><code>$ gem install passenger</code></pre>
+<p>This is a good time to note down just where the Passenger gem is installed. The authors provide a handy command to let the user know just that.</p>
+<pre><code>$ passenger-config --root
+/usr/local/lib/ruby/gems/1.9.1/gems/passenger-3.0.11
+$ PASSENGER_NGINX_DIR=`passenger-config --root`/ext/nginx</code></pre>
+<h2 id="downloading-the-pcre-source">Downloading the PCRE source</h2>
+<p>If you want to install Nginx with modules that depend on the <a href="http://www.pcre.org/">PCRE</a> library, you’ll need to download its source code too. Otherwise, skip this step and move on to the next section.</p>
+<pre><code>$ cd /usr/local/src
+$ wget ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.21.tar.gz
+$ tar -xzvf pcre-8.21.tar.gz
+$ cd pcre-8.21
+$ PCRE_DIR=`pwd`</code></pre>
+<h2 id="compiling-nginx">Compiling Nginx</h2>
+<p>At this point you’ll need to download the Nginx source files to your server. I keep mine in <code>/usr/local/src</code>, but you can do this anywhere. As of the time of writing, the latest stable version of Nginx is 1.0.12, but of course that may well have changed by the time you read this, and so the URL to pass to <code>wget</code> will have changed too.</p>
+<pre><code>$ cd /usr/local/src
+$ wget http://nginx.org/download/nginx-1.0.12.tar.gz
+$ tar -xzvf nginx-1.0.12.tar.gz
+$ NGINX_SRC_DIR=/usr/local/src/nginx-1.0.12/
+$ cd $NGINX_SRC_DIR</code></pre>
+<p>We’re now at the point where some decisions need to be made. These include where you want to install the <code>nginx</code> binary, where your Nginx config file is going to live, where it should write log files, and most importantly in this context, which modules you want to compile with it. I’m going to describe a fairly standard, minimal setup with TLS and Gzip support, the <a href="http://wiki.nginx.org/HttpSubModule">Substitution</a> module for replacing text in responses (good for embedding analytics code), as well as compiling in the Passenger module. The <a href="http://wiki.nginx.org/InstallOptions">install options</a> page on the Nginx wiki is very comprehensive if you want to deviate from the ones provided here.</p>
+<pre><code>$ ./configure \
+  --prefix=/usr/local \
+  --sbin-path=/usr/local/sbin \
+  --conf-path=/etc/nginx/nginx.conf \
+  --error-log-path=/var/log/nginx/error.log \
+  --http-log-path=/var/log/nginx/access.log \
+  --with-http_ssl_module \
+  --with-http_gzip_static_module \
+  --add-module=$PASSENGER_NGINX_DIR \
+  --with-pcre=$PCRE_DIR \
+  --with-http_sub_module
+$ make
+$ make install</code></pre>
+<h2 id="configuring-nginx-and-passenger">Configuring Nginx and Passenger</h2>
+<p>I’m only going to cover the basics of setting up and configuring Nginx and Passenger—there are plenty of other articles out there which provide comprehensive coverage of this topic. For that reason, exposition here will be relatively brief and high level; you can get the details elsewhere should you need them.</p>
+<p>Managing a web server process by hand is, of course, not something anyone wants to do—that’s what <a href="http://code.google.com/p/nginx-init-ubuntu">initialisation scripts</a> are for. Just copy the source of that script to <code>/etc/init.d/nginx</code> (depending on the details of your setup, you might need to tweak it a little), then make it writable, and add it to the default run levels so it’ll start automatically on boot. For details, consult the Linode Library articles on <a href="http://library.linode.com/web-servers/nginx/installation/">installing Nginx</a>. They have their own init script which you might prefer to the one linked above.</p>
+<pre><code>$ chmod +x /etc/init.d/nginx
+$ /usr/sbin/update-rc.d -f nginx defaults</code></pre>
+<p>The next step is to set up your <code>nginx.conf</code> file. The best way to start is to use the configuration that comes with the Nginx source as a basis for your own. Again, Linode have some excellent articles on <a href="http://library.linode.com/web-servers/nginx/configuration/">configuring Nginx</a>.</p>
+<pre><code>$ cd $NGINX_SRC_DIR
+$ cp -R conf /etc/nginx
+$ mdkir /etc/nginx/conf.d</code></pre>
+<p>Then edit <code>/etc/nginx/nginx.conf</code> and add the following line before the end of the <code>http</code> block.</p>
+<pre><code>include /etc/nginx/conf.d/*.conf;</code></pre>
+<p>That will pull in any configuration files you place in the <code>/etc/nginx/conf.d/</code> directory, including the one you’re about to add. Open up <code>/etc/nginx/conf.d/passenger.conf</code> in a text editor and add the following two lines:</p>
+<pre><code>passenger_root /usr/local/lib/ruby/gems/1.9.1/gems/passenger-3.0.11;
+passenger_ruby /usr/local/bin/ruby;</code></pre>
+<p>The value of the <code>passenger_root</code> variable should be the output of running <code>passenger-config --root</code>, while the second should be the path to your <code>ruby</code> binary (you can get it by running <code>which ruby</code>). Keeping this information in a separate configuration file to your main Nginx config just makes it simpler to update when you upgrade Passenger and need to change that the value of <code>passenger_root</code> to point to the new location.</p>
+<p>All that’s needed now is to let Nginx know about the <a href="http://rack.rubyforge.org/">Rack</a> application you want to run. Again, there are plenty of other articles which explain this process, particularly the relevant sections of the Passenger users guide (<a href="http://www.modrails.com/documentation/Users%20guide%20Nginx.html#deploying_a_ror_app">§3</a> for Ruby on Rails applications, <a href="http://www.modrails.com/documentation/Users%20guide%20Nginx.html#deploying_a_rack_app">§4</a> for generic Rack applications). Essentially, all that’s needed is to tell Nginx what the path to your Rack application is, and that it should use Passenger. The minimal configuration below should suffice—just put it (suitably modified to reflect the details of your site) somewhere Nginx will find it.</p>
+<pre><code>server {
+    listen 80;
+
+    server_name myrackapp.net;
+    root /var/www/myrackapp.net/public;
+
+    passenger_enabled on;
+    rails_env production;
+}</code></pre>
+<p>Most of this is common to all Nginx <code>server</code> directives—the ones we’re interested in are <code>passenger_enabled</code> and <code>rails_env</code>. The first makes Nginx enable Passenger for that server, while the latter specifies the environment the relevant Rack application should be run in. Of course, there are many more options available than just these two—for details, consult <a href="http://www.modrails.com/documentation/Users%20guide%20Nginx.html#_configuring_phusion_passenger">§5</a> of the guide. Now you just need to start up the server.</p>
+<pre><code>$ /etc/init.d/nginx start</code></pre>
+<h2 id="recompiling-nginx">Recompiling Nginx</h2>
+<p>If you want to install a new version of Nginx, or a new version of Passenger, you’ll have to recompile Nginx. If it’s the latter, install the new Passenger gem as described above, and then compile Nginx. There are two gotchas to this process, and one handy trick: if you ask nicely, an <code>nginx</code> binary will tell you exactly what configure arguments were passed when compiling it.</p>
+<pre><code>$ cd $NGINX_SRC_DIR
+$ nginx -V
+nginx: nginx version: nginx/1.0.12
+nginx: built by gcc 4.4.3 (Ubuntu 4.4.3-4ubuntu5)
+nginx: TLS SNI support enabled
+nginx: configure arguments: --prefix=/usr/local --sbin-path=/usr/local/sbin --conf-path=/etc/nginx/nginx.conf --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log --with-pcre=/usr/local/src/pcre-8.21 --add-module=/usr/local/lib/ruby/gems/1.9.1/gems/passenger-3.0.11/ext/nginx --with-http_ssl_module --with-http_gzip_static_module --with-http_sub_module</code></pre>
+<p>This is incredibly handy: you don’t need to write down or reconstruct what options you chose you compiled Nginx, as the program remembers them all for you. Now, if you’ve just installed a new version of Passenger, you can’t just copy and paste the arguments verbatim—you have to change the value of the <code>add-module</code> flag to point to the location of the new Passenger gem.</p>
+<p>Run <code>./configure</code> with the appropriate flags and then <code>make</code> as above. Since you’re recompiling, presumably your existing <code>nginx</code> program is running at this point, so you need to stop it before installing the new binary. If you’re reinstalling Passenger, you must update your <code>passenger.conf</code> file with the new path to the library. Then stop <code>nginx</code>, install the new binary, and restart it.</p>
+<pre><code>$ /etc/init.d/nginx stop
+$ make install
+$ /etc/init.d/nginx start</code></pre>
+</article>
+
+    </section>
+    
+    <footer id="footer" class="wrapper">
+        <p>
+            Created by <a href="http://folone.info/">Georgii Leontiev</a>.
+        </p>
+    </footer>
+    
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</body></html>

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html><head>
+    <meta charset="utf-8">
+    <title>ScalaUA: Approaches to currying in JavaScript</title>
+    
+    <link rel="stylesheet" href="../css/main.css">
+    
+    <link rel="alternate" type="application/atom+xml" href="../articles.atom" title="Extralogical feed">
+
+<!--tracking-->
+</head><body>
+    <header id="header"><div class="wrapper">
+        <h1 id="title"><a href="../">Scala в Украине</a></h1>
+        
+        <ul id="navigation">
+            <li><a href="../meetups">Встречи</a></li>
+            <li><a href="../articles">Архив</a></li>
+            <li><a href="../about">О Скале</a></li>
+        </ul>
+    </div></header>
+    
+    <section id="main" class="wrapper">
+        <article>
+    <h1>Approaches to currying in JavaScript</h1>
+    
+    <p class="date">August 21, 2010</p>
+    
+    <p>JavaScript’s dynamic nature makes it hard to straightforwardly apply many functional programming idioms. One example of this is <a href="http://en.wikipedia.org/wiki/Currying">currying</a>: any function may be passed an arbitrary number of arguments, making it impossible to write a truly general currying function.</p>
+<p>To recap, currying is a technique for transforming a function which accepts <em>n</em> parameters into a nest of partially applicable functions. Consider the function <em>f = λxyz.M</em>, which has three parameters, <em>x</em>, <em>y</em> and <em>z</em>. By currying, we obtain a new function <em>f* = λx.(λy.(λz.M))</em>.</p>
+<p>One simple example is currying an <code>add</code> function which accepts 2 parameters and returns the result of adding them together.</p>
+<pre class="sourceCode JavaScript"><code class="sourceCode javascript"><span class="kw">var</span> add = <span class="kw">function</span>(a, b) {
+    <span class="kw">return</span> a + b;
+};
+
+<span class="kw">var</span> curriedAdd = <span class="kw">function</span>(a) {
+    <span class="kw">return</span> <span class="kw">function</span>(b) {
+        <span class="kw">return</span> a + b;
+    };
+};</code></pre>
+<p>A function which returns the result of evaluating a quadratic expression demonstrates more clearly the ‘nesting’ of functions which currying produces.</p>
+<pre class="sourceCode JavaScript"><code class="sourceCode javascript"><span class="kw">var</span> quadratic = <span class="kw">function</span>(a, b, c, x) {
+    <span class="kw">return</span> a * x * x + b * x + c;
+};
+
+<span class="kw">var</span> curriedQuadratic = <span class="kw">function</span>(a) {
+    <span class="kw">return</span> <span class="kw">function</span>(b) {
+        <span class="kw">return</span> <span class="kw">function</span>(c) {
+            <span class="kw">return</span> <span class="kw">function</span>(x) {
+                <span class="kw">return</span> a * x * x + b * x + c;
+            };
+        };
+    };
+};</code></pre>
+<p>Given a pattern like this, the obvious question is how to generalise it. Ideally, we would write a <code>curry</code> function to automatically transform functions like <code>quadratic</code> into ones like <code>curriedQuadratic</code>. The simplest approach is to make curried functions always return a single wrapping function:</p>
+<pre class="sourceCode JavaScript"><code class="sourceCode javascript"><span class="kw">var</span> naiveCurry = <span class="kw">function</span>(f) {
+    <span class="kw">var</span> args = <span class="kw">Array</span>.<span class="fu">prototype</span>.<span class="fu">slice</span>.<span class="fu">call</span>(arguments, <span class="dv">1</span>);
+
+    <span class="kw">return</span> <span class="kw">function</span>() {
+        <span class="kw">var</span> largs = <span class="kw">Array</span>.<span class="fu">prototype</span>.<span class="fu">slice</span>.<span class="fu">call</span>(arguments, <span class="dv">0</span>);
+        <span class="kw">return</span> <span class="kw">f</span>.<span class="fu">apply</span>(<span class="kw">this</span>, <span class="kw">args</span>.<span class="fu">concat</span>(largs));
+    };
+};</code></pre>
+<p>Clearly this is not true currying, except for functions of arity 2. We cannot use it to perform the transformation from <code>quadratic</code> to <code>curriedQuadratic</code>.</p>
+<p>A cleverer approach would be to detect the arity of the function we wish to curry. To do this, we can use the length property of the function, which returns the number of named arguments the function accepts. <code>Math.tan.length</code> is 1, while <code>parseInt.length</code> is 2.</p>
+<pre class="sourceCode JavaScript"><code class="sourceCode javascript"><span class="kw">var</span> curryByLength = <span class="kw">function</span>(f) {
+    <span class="kw">var</span> arity = <span class="kw">f</span>.<span class="fu">length</span>,
+        args  = <span class="kw">Array</span>.<span class="fu">prototype</span>.<span class="fu">slice</span>.<span class="fu">call</span>(arguments, <span class="dv">1</span>),
+
+    accumulator = <span class="kw">function</span>() {
+        <span class="kw">var</span> largs = args;
+
+        <span class="kw">if</span> (<span class="kw">arguments</span>.<span class="fu">length</span> &gt; <span class="dv">0</span>) {
+            <span class="co">// We must be careful to copy the `args` array with `concat` rather</span>
+            <span class="co">// than mutate it; otherwise, executing curried functions can have</span>
+            <span class="co">// strange non-local effects on other curried functions.</span>
+            largs = <span class="kw">largs</span>.<span class="fu">concat</span>(<span class="kw">Array</span>.<span class="fu">prototype</span>.<span class="fu">slice</span>.<span class="fu">call</span>(arguments, <span class="dv">0</span>));
+        }
+
+        <span class="kw">if</span> (<span class="kw">largs</span>.<span class="fu">length</span> &gt;= arity) {
+            <span class="kw">return</span> <span class="kw">f</span>.<span class="fu">apply</span>(<span class="kw">this</span>, largs);
+        } <span class="kw">else</span> {
+            <span class="kw">return</span> <span class="kw">curryByLength</span>.<span class="fu">apply</span>(<span class="kw">this</span>, [f].<span class="fu">concat</span>(largs));
+        }
+    };
+
+    <span class="kw">return</span> <span class="kw">args</span>.<span class="fu">length</span> &gt;= arity ? accumulator() : accumulator;
+};</code></pre>
+<p>However, the length property of any given JavaScript function can easily mislead. To begin with, we often find it useful to define functions with optional parameters.</p>
+<pre class="sourceCode JavaScript"><code class="sourceCode javascript"><span class="kw">var</span> someFunction = <span class="kw">function</span>(a, flag) {
+    <span class="kw">if</span> (flag) {
+        <span class="co">// Some computation involving a</span>
+    } <span class="kw">else</span> {
+        <span class="co">// Some other computation involving a</span>
+    }
+};</code></pre>
+<p>Now consider a variadic function, like <code>Math.max</code>, which returns the largest number amongst its arguments. Despite the fact that it can in fact be called with any number of arguments, including 0 and 1, it has a length property of 2. Consequently, our ‘smarter’ curry function will only work with <code>Math.max</code> up to a point. This will throw a type error, even though <code>Math.max</code> will accept three arguments quite happily:</p>
+<pre class="sourceCode JavaScript"><code class="sourceCode javascript">curryByLength(<span class="kw">Math</span>.<span class="fu">max</span>)(<span class="dv">1</span>)(<span class="dv">2</span>)(<span class="dv">3</span>);</code></pre>
+<p>Currying <code>Math.max</code> limits its utility to discriminating between two numbers, not <em>n</em> numbers. We can easily think of similar examples—other variadic functions, functions with optional arguments, and similarly clever abuses of JavaScript’s dynamic arguments to create complex APIs. jQuery’s <code>bind</code> method could be considered <a href="http://api.jquery.com/bind/">an example</a> of this: the event handler can be passed to the method as either the second or the third argument, depending on whether the user wishes to use the optional <code>eventData</code> parameter or not.</p>
+<p>It is easy to see that there is no general way of resolving this issue: currying is essentially at odds with variadic functions and the ability to change the number of arguments a function accepts at runtime. However, one’s choices are not limited simply to the approaches discussed above; there are alternatives, even if they do not fully dispose of the problem of dynamic arity.</p>
+<p>Firstly, one can simply leave things as they are, with the <code>curry</code> function having a known limitation around functions with dynamic arity. The burden is placed on the user to ensure they take care when currying.</p>
+<p>Alternatively, one could make the arity an explicit component of the <code>curry</code> function. This differs from the implicit detection of the arity via the curried function’s length property (however, the implementation is almost identical).</p>
+<pre class="sourceCode JavaScript"><code class="sourceCode javascript"><span class="kw">var</span> curryWithExplicitArity = <span class="kw">function</span>(f, n) {
+    <span class="kw">var</span> args = <span class="kw">Array</span>.<span class="fu">prototype</span>.<span class="fu">slice</span>.<span class="fu">call</span>(arguments, <span class="dv">2</span>),
+
+    accumulator = <span class="kw">function</span>() {
+        <span class="kw">var</span> largs = args;
+
+        <span class="kw">if</span> (<span class="kw">arguments</span>.<span class="fu">length</span> &gt; <span class="dv">0</span>) {
+            largs = <span class="kw">largs</span>.<span class="fu">concat</span>(<span class="kw">Array</span>.<span class="fu">prototype</span>.<span class="fu">slice</span>.<span class="fu">call</span>(arguments, <span class="dv">0</span>));
+        }
+
+        <span class="kw">if</span> (<span class="kw">largs</span>.<span class="fu">length</span> &gt;= n) {
+            <span class="kw">return</span> <span class="kw">f</span>.<span class="fu">apply</span>(<span class="kw">this</span>, largs);
+        } <span class="kw">else</span> {
+            <span class="kw">return</span> <span class="kw">curryByLength</span>.<span class="fu">apply</span>(<span class="kw">this</span>, [f].<span class="fu">concat</span>(largs));
+        }
+    };
+
+    <span class="kw">return</span> <span class="kw">args</span>.<span class="fu">length</span> &gt;= n ? accumulator() : accumulator;
+};</code></pre>
+<p>Finally, one could have entirely different <code>curry</code> functions for each arity. This has the benefit of being explicit, and while it doesn’t solve the problem of functions with dynamic arity, it does mean that one doesn’t have to specify the arity of the function one wishes to curry each time as an additional parameter. Instead of writing <code>curry(f, 3)</code>, one can simply write <code>curry3(f)</code>.</p>
+<p>In fact, there is a way to combine these last two approaches, by writing a function which generates curry functions for any given arity.</p>
+<pre class="sourceCode JavaScript"><code class="sourceCode javascript"><span class="kw">var</span> ncurry = <span class="kw">function</span>(n) {
+    <span class="kw">var</span> _curry = <span class="kw">function</span>(f) {
+        <span class="kw">var</span> args = <span class="kw">Array</span>.<span class="fu">prototype</span>.<span class="fu">slice</span>.<span class="fu">call</span>(arguments, <span class="dv">1</span>),
+
+        <span class="kw">return</span> <span class="kw">function</span>() {
+            <span class="kw">var</span> largs = <span class="kw">args</span>.<span class="fu">concat</span>(<span class="kw">Array</span>.<span class="fu">prototype</span>.<span class="fu">slice</span>.<span class="fu">call</span>(arguments, <span class="dv">0</span>));
+
+            <span class="kw">if</span> (<span class="kw">largs</span>.<span class="fu">length</span> &lt; n) {
+                <span class="kw">largs</span>.<span class="fu">unshift</span>(f);
+                <span class="kw">return</span> <span class="kw">_curry</span>.<span class="fu">apply</span>(null, largs);
+            } <span class="kw">else</span> {
+                <span class="kw">return</span> <span class="kw">f</span>.<span class="fu">apply</span>(null, largs);
+            }
+        };
+    };
+
+    <span class="kw">return</span> _curry;
+};</code></pre>
+<p>For common use cases such as functions which accept 2 or 3 arguments, one can write simple aliases using <code>ncurry</code>, while one can always use <code>ncurry</code> ‘inline’ where necessary.</p>
+<pre class="sourceCode JavaScript"><code class="sourceCode javascript"><span class="kw">var</span> curry  = ncurry(<span class="dv">2</span>),
+    curry3 = ncurry(<span class="dv">3</span>);
+
+<span class="co">// Presumably `f7` is a function which accepts 7 arguments</span>
+<span class="kw">var</span> fc7 = ncurry(<span class="dv">7</span>)(f7);</code></pre>
+<p>However, oftentimes something along the lines of <code>curryByLength</code> is preferable. If the library of functions one is working with consists of a set of functions with well-defined lists of parameters, then implicit rather than explicit conversion can be more convenient and more natural; it is, after all, rather nicer to be able to write <code>curry(f)</code> than <code>curry(f, n)</code> or even <code>ncurry(n)(f)</code>.</p>
+<p>Ultimately which approach one decides to take must be based on understanding of the properties of the functions one is working with. A choice of currying function will then arise naturally—and after all, one can always use several. Both of these approaches are <a href="http://github.com/beastaugh/udon">available in Udon</a>, my library for functional programming in JavaScript, as <code>Udon.curry</code> and <code>Udon.ncurry</code>.</p>
+<h2 id="further-reading-prior-art">Further reading &amp; prior art</h2>
+<ul>
+<li><a href="http://www.svendtofte.com/code/curried_javascript/">Curried JavaScript functions</a> by Svend Tofte;</li>
+<li><a href="http://ejohn.org/blog/partial-functions-in-javascript/">Partial Application in JavaScript</a> by John Resig;</li>
+<li><a href="http://www.danwebb.net/2006/11/3/from-the-archives-cleaner-callbacks-with-partial-application">Cleaner Callbacks With Partial Application</a> by Dan Webb;</li>
+<li><a href="http://osteele.com/sources/javascript/functional/">Functional JavaScript</a>, a library by Oliver Steele;</li>
+<li><a href="http://www.cs.nott.ac.uk/~gmh/faq.html#currying">Currying</a> (from the comp.lang.functional FAQ);</li>
+<li><a href="http://c2.com/cgi/wiki?CurryingSchonfinkelling">Currying Schönfinkelling</a> (from the c2 wiki);</li>
+<li><a href="http://www.haskell.org/haskellwiki/Currying">Currying in Haskell</a> (from the Haskell wiki);</li>
+<li><a href="http://comonad.com/reader/2009/curried-scheme/">Curried Scheme</a> by Edward Kmett.</li>
+</ul>
+</article>
+
+    </section>
+    
+    <footer id="footer" class="wrapper">
+        <p>
+            Created by <a href="http://folone.info/">Georgii Leontiev</a>.
+        </p>
+    </footer>
+    
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</body></html>
