@@ -1,0 +1,7 @@
+$rawTitle$
+
+  By Benedict Eastaugh
+  <http://extralogical.net$articleUrl$>
+  $publicationDates$
+
+$body$
