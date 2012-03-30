@@ -3,6 +3,9 @@ ScalaUA
 
 # Локальная установка:
 Сайт собран с помощью [hakyll][hakyll]'а.
+Прежде чем начать, понадобится установить [ghc][ghc] и сам
+[hakyll][hakyll].
+
 Проект построен таким образом: в master'е лежит сгенерённый сайт, в
 ветке sources -- исходники.
 Чтобы произвести локальную установку проекта, сделать нужно следующее:
@@ -27,4 +30,5 @@ ScalaUA
 `scalaua.github.com` пушить в `sources`, из `scalaua.github.com/_site`
 -- в `master`.
 
-[hakyll]: http://jaspervdj.be/hakyll/
+[hakyll]:   http://jaspervdj.be/hakyll/
+[ghc][ghc]: http://www.haskell.org/ghc/
