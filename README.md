@@ -31,4 +31,4 @@ ScalaUA
 -- в `master`.
 
 [hakyll]:   http://jaspervdj.be/hakyll/
-[ghc][ghc]: http://www.haskell.org/ghc/
+[ghc]:      http://www.haskell.org/ghc/
