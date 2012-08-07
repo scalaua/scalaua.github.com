@@ -21,6 +21,14 @@ main = hakyll $ do
         route   idRoute
         compile copyFileCompiler
     
+    match "CNAME" $ do
+        route   idRoute
+        compile copyFileCompiler
+    
+    match "README.md" $ do
+        route   idRoute
+        compile copyFileCompiler
+    
     -- Files
     match "files/**" $ do
         route   idRoute
@@ -46,15 +54,18 @@ main = hakyll $ do
         route   idRoute
         compile compressCssCompiler
     
+    -- Fpntss CSS
+    match "css/font/*" $ do
+        route   idRoute
+        compile copyFileCompiler
+
     -- Read templates
     match "templates/*" $ compile templateCompiler
     
-    let articleDirs = regex "^(articles|drafts)\\/.+\\.[a-z]+$"
-    let allContent  = regex "^(articles|drafts|meetups)\\/.+\\.[a-z]+$"
-    let meetupDir   = regex "^(meetups|drafts)\\/.+\\.[a-z]+$"
+    let articleDirs = regex "^(articles)\\/.+\\.[a-z]+$"
     
-    -- All
-    match allContent $ do
+    -- All articles
+    match "articles/*" $ do
         route   $ routeArticle
         compile $ articleCompiler
             >>> arr pageTitle
@@ -64,23 +75,22 @@ main = hakyll $ do
             >>> applyTemplateCompiler "templates/default.html"
             >>> relativizeUrlsCompiler
     
-    -- Plain text versions of articles
-    group "raw" $ do
-        match articleDirs $ do
-            route   $ routeArticleRaw
-            compile $ readPageCompiler
-                >>> addDefaultFields
-                >>> arr formatDate
-                >>> arr publicationDates
-                >>> arr (markdownH1 "rawTitle")
-                >>> arr (htmlUrl "articleUrl")
-                >>> applyTemplateCompiler "templates/raw.txt"
-    
+    -- All meetups
+    match "meetups/*" $ do
+        route   $ routeArticle
+        compile $ articleCompiler
+            >>> arr pageTitle
+            >>> arr formatDate
+            >>> arr publicationDates
+            >>> applyTemplateCompiler "templates/article.html"
+            >>> applyTemplateCompiler "templates/default.html"
+            >>> relativizeUrlsCompiler
+
     -- Home page
     match  "index.html" $ route idRoute
     create "index.html" $ constA mempty
         >>> arr (setField "pageTitle" "ScalaUA")
-        >>> setFieldPageList (newest 10) "templates/short.html" "articles" (articleDirs `mappend` inGroup Nothing)
+        >>> setFieldPageList (newest 10) "templates/short.html" "articles" ("articles/*" `mappend` inGroup Nothing)
         >>> applyTemplateCompiler "templates/home.html"
         >>> applyTemplateCompiler "templates/default.html"
         >>> relativizeUrlsCompiler
@@ -90,7 +100,7 @@ main = hakyll $ do
     create "articles.html" $ constA mempty
         >>> arr (setField "title" "Архив")
         >>> arr pageTitle
-        >>> setFieldPageList recentFirst "templates/item.html" "articles" (allContent `mappend` inGroup Nothing)
+        >>> setFieldPageList recentFirst "templates/item.html" "articles" ("articles/*" `mappend` inGroup Nothing)
         >>> applyTemplateCompiler "templates/articles.html"
         >>> applyTemplateCompiler "templates/default.html"
         >>> relativizeUrlsCompiler
@@ -100,7 +110,7 @@ main = hakyll $ do
     create "meetups.html" $ constA mempty
         >>> arr (setField "title" "Встречи")
         >>> arr pageTitle
-        >>> setFieldPageList recentFirst "templates/item.html" "meetups" (meetupDir `mappend` inGroup Nothing)
+        >>> setFieldPageList recentFirst "templates/item.html" "meetups" ("meetups/*" `mappend` inGroup Nothing)
         >>> applyTemplateCompiler "templates/meetups.html"
         >>> applyTemplateCompiler "templates/default.html"
         >>> relativizeUrlsCompiler
@@ -110,11 +120,6 @@ main = hakyll $ do
         match page $ do
             route   $ routePage
             compile $ pageCompiler'
-    
-    -- Atom feed
-    match  "articles.atom" $ route idRoute
-    create "articles.atom" $
-        requireAll_ (allContent `mappend` inGroup Nothing) >>> renderAtom feedConfiguration
     
     -- 404 page
     match "404.html" $ do
