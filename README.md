@@ -14,9 +14,7 @@ ScalaUA
 
  `cd scalaua.github.com`
 
- `git clone git@github.com:scalaua/scalaua.github.com.git`
-
- `mv scalaua.github.com/ _site`
+ `git clone git@github.com:scalaua/scalaua.github.com.git _site`
 
  `ghc --make site.hs`
 
