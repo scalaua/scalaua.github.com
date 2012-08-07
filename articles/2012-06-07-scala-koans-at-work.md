@@ -1,6 +1,6 @@
 ---
-title: анонс scala-koans work day
-description: у кого есть роскошь выделить рабочий день на изучение языка: scala-koans work day
+title: Анонс scala-koans work day
+description: У кого есть роскошь выделить рабочий день на изучение языка: scala-koans work day
 ---
 
 * Что:  scala-koans work day
