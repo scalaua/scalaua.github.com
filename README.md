@@ -1,14 +1,34 @@
 ScalaUA
 =======
 
-`sudo yaourt -S ghc`
+# Локальная установка:
+Сайт собран с помощью [hakyll][hakyll]'а.
+Прежде чем начать, понадобится установить [ghc][ghc] и сам
+[hakyll][hakyll].
 
-`sudo yaourt -S cabal-install`
+Проект построен таким образом: в master'е лежит сгенерённый сайт, в
+ветке sources -- исходники.
+Чтобы произвести локальную установку проекта, сделать нужно следующее:
 
-`cabal update`
+ `git clone -b sources git@github.com:scalaua/scalaua.github.com.git`
 
-`cabal install hakyll`
+ `cd scalaua.github.com`
 
-`ghc --make site.hs`
+ `git clone git@github.com:scalaua/scalaua.github.com.git`
 
-`./site preview`
+ `mv scalaua.github.com/ _site`
+
+ `ghc --make site.hs`
+
+Далее `./site preview` запустит локальный сервер, а `./site build`
+сгенерит в `_site` контент, готовый к коммиту в мастер.
+
+# Добавление новостей, статей, прочего.
+Если вы хотите добавить свои статьи, новости, сверстать новый дизайн,
+етс, форкните проект, установите его локально, сделайте нужные вам
+изменения  пошлите пулл реквесты **в обе** ветки: из директории
+`scalaua.github.com` пушить в `sources`, из `scalaua.github.com/_site`
+-- в `master`.
+
+[hakyll]:   http://jaspervdj.be/hakyll/
+[ghc]:      http://www.haskell.org/ghc/
