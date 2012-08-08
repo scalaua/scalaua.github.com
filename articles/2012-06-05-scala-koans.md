@@ -1,5 +1,5 @@
 ---
-title: анонс scala-koans code retreat
+title: Анонс scala-koans code retreat
 description: Для тех, кто хочет ознакомиться со scala, появилась возможность сделать это участвуя в scala-koans code retreat.
 ---
 

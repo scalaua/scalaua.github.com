@@ -20,3 +20,17 @@
     font-weight: normal;
     font-style: normal;
 }
+
+@font-face {
+    font-family: 'Prosto';
+    src: url('font/Prosto.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Russo One';
+    src: url('font/Russo_One.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}

@@ -75,8 +75,7 @@ html {
 
 body {
     min-width:660px;
-    font-family: Georgia, 'Times New Roman', Times, sans-serif;
-    font-size:14px;
+    font-family: "Prosto", Georgia, 'Times New Roman', Times, sans-serif;
     line-height:1.5;
     color:#1a1a1a;
     background:#fff
@@ -120,7 +119,7 @@ h4 {
 }
 
 p {
-    margin-bottom:1.25em
+    margin-bottom:1em
 }
 
 a {
@@ -159,22 +158,12 @@ blockquote {
     padding:0 3em
 }
 
-ul, 
-ol {
-    margin:0 0 1.25em 0
-}
-
 ul {
     list-style:disc
 }
 
 ol {
     list-style:decimal
-}
-
-ul li, 
-ol li {
-    margin:0.25em 0
 }
 
 ul ol, 
@@ -223,19 +212,29 @@ del {
 
 table {
     border-collapse:collapse;
-    border-spacing:0
+    border-spacing:0;
 }
 
 article {
     clear:both;
     border-bottom:1px solid #e5e5e5;
-    padding:2em 0
+    padding: 2em 0px 1em;
+}
+
+.title-forward-link {
+    font-size: 2em;
+    margin-left: -62px;
+    position: absolute;
+    top: 2px;
+    opacity: 0.8;
+}
+
+.title-hr {
+    width: 100%;
 }
 
 article h1 {
-    margin-bottom:0.4em;
-    border-bottom:1px solid #ccc;
-    padding-bottom:0.3em
+    position: relative;
 }
 
 article h1 a {
@@ -243,11 +242,10 @@ article h1 a {
 }
 
 .date {
-    margin:0 0 1em 0
 }
 
 .summary {
-    margin:0
+    margin-top:1em;
 }
 
 .section {
@@ -297,15 +295,18 @@ section.content {
 
 #header {
     font-family: 'MolotRegular', 'Lucida Grande', Helvetica, Arial, sans-serif;
-    letter-spacing:0.2em
+    letter-spacing:0.1em
 }
 
+#header .wrapper {
+    margin-top: 0.5em;
+}
 
 #title {
-    width:39%;
+    line-height: 1;
     margin:0;
     float:left;
-    font-size:4.2em;
+    font-size:5em;
     font-family: 'DitedRegular';
 }
 
@@ -314,13 +315,11 @@ section.content {
 }
 
 #nav-wrapper {
-    width: 59%;
     float: right;
 }
 
 #navigation {
     width:100%;
-    margin:1px 0 0 0;
     font-size: 1em;
 }
 
@@ -329,7 +328,6 @@ section.content {
     display: block;
     text-align: center;
     position: relative;
-    padding: 5px 10px 10px;
     text-decoration: none;
     border: none;
     overflow: hidden;
@@ -347,8 +345,8 @@ section.content {
 }
 
 #navigation li {
-    float: left;
-    width: 33.333%;
+    display: inline-block;
+    width: 100px;
     list-style:none;
 }
 
@@ -362,14 +360,14 @@ section.content {
 }
 
 #articles-listing li {
-    margin:0.4em 0;
+    margin:0.5em 0;
     list-style:none;
     clear:both
 }
 
 #articles-listing .date {
     display:block;
-    width:150px;
+    width:160px;
     float:left
 }
 
