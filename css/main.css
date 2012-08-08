@@ -222,11 +222,11 @@ article {
 }
 
 .title-forward-link {
-    font-size: 2em;
-    margin-left: -62px;
-    position: absolute;
-    top: 2px;
+    font-size: 1em;
+    margin-left: -35px;
     opacity: 0.8;
+    position: absolute;
+    top: 0px;
 }
 
 .title-hr {
