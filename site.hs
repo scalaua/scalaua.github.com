@@ -10,9 +10,10 @@ import Data.Time.Clock (UTCTime)
 import Data.Time.Format (parseTime, formatTime)
 import System.FilePath
 import System.Locale (defaultTimeLocale)
-import Text.Pandoc.Shared (HTMLMathMethod(..), ObfuscationMethod(..), WriterOptions(..), defaultWriterOptions)
+import Text.Pandoc.Shared 
 
 import Hakyll
+import Hakyll.Web.Template
 
 main :: IO ()
 main = hakyll $ do
@@ -62,38 +63,38 @@ main = hakyll $ do
     -- Read templates
     match "templates/*" $ compile templateCompiler
     
-    let articleDirs = regex "^(articles)\\/.+\\.[a-z]+$"
+    -- let articleDirs = regex "^(articles)\\/.+\\.[a-z]+$"
     
     -- All articles
     match "articles/*" $ do
         route   $ routeArticle
         compile $ articleCompiler
-            >>> arr pageTitle
-            >>> arr formatDate
-            >>> arr publicationDates
-            >>> applyTemplateCompiler "templates/article.html"
-            >>> applyTemplateCompiler "templates/default.html"
-            >>> relativizeUrlsCompiler
+            >>= arr pageTitle
+            >>= arr formatDate
+            >>= arr publicationDates
+            >>= loadAndApplyTemplate "templates/article.html"
+            >>= loadAndApplyTemplate "templates/default.html"
+            >>= relativizeUrls
     
     -- All meetups
     match "meetups/*" $ do
         route   $ routeArticle
         compile $ articleCompiler
-            >>> arr pageTitle
-            >>> arr formatDate
-            >>> arr publicationDates
-            >>> applyTemplateCompiler "templates/article.html"
-            >>> applyTemplateCompiler "templates/default.html"
-            >>> relativizeUrlsCompiler
+            >>= arr pageTitle
+            >>= arr formatDate
+            >>= arr publicationDates
+            >>= loadAndApplyTemplate "templates/article.html"
+            >>= loadAndApplyTemplate "templates/default.html"
+            >>= relativizeUrls
 
     -- Home page
     match  "index.html" $ route idRoute
-    create "index.html" $ constA mempty
-        >>> arr (setField "pageTitle" "ScalaUA")
-        >>> setFieldPageList (newest 10) "templates/short.html" "articles" ("articles/*" `mappend` inGroup Nothing)
-        >>> applyTemplateCompiler "templates/home.html"
-        >>> applyTemplateCompiler "templates/default.html"
-        >>> relativizeUrlsCompiler
+    create "index.html" $ const mempty
+        >>= arr constField "pageTitle" "ScalaUA"     -- >>= arr (field "pageTitle"  "ScalaUA")
+        >>= setFieldPageList (newest 10) "templates/short.html" "articles" ("articles/*" `mappend` inGroup Nothing)
+        >>= loadAndApplyTemplate "templates/home.html"
+        >>= loadAndApplyTemplate "templates/default.html"
+        >>= relativizeUrls
     
     -- Articles listing
     match  "articles.html" $ route routePage
