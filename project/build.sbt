@@ -1,3 +1,3 @@
 
 
-addSbtPlugin("com.lihaoyi" % "scalatex-sbt-plugin" % "0.1.0")
+addSbtPlugin("com.typesafe.sbt" % "sbt-twirl" % "1.0.4")
