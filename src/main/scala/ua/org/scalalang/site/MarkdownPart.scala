@@ -58,13 +58,18 @@ object MarkdownPart
    var secondDashFound=false
    var withoutAttributes=false
    var attributes = Map[String,String]()
-   val rest = source.getLines.dropWhile{ line =>
+   var rest = IndexedSeq[String]()
+   val it = source.getLines()
+   while(it.hasNext && !withoutAttributes) {
+     val line = it.next
      Console.println(s"${i}:${line}")
      if (i==0)  {
        if (!isDash(line)) {
          Console.println(s"first dash not found for ${fname}, assuming this is plain markdown")
          withoutAttributes = true 
        }
+     }  else if (secondDashFound) {
+         rest :+= line
      }  else if (isDash(line)) {
          secondDashFound = true
      } else {
@@ -79,9 +84,8 @@ object MarkdownPart
          }
      }
      i += 1 
-     !secondDashFound || withoutAttributes
    }
-   val forsed = rest.toList // actually execute dropWhile
+   Console.println("rest="+rest)
    if (!secondDashFound) {
      Console.println(s"second dash not found for ${fname}, assuming this is plain markdown")
      withoutAttributes = true
@@ -91,6 +95,7 @@ object MarkdownPart
                 } else {
                    knockoff(rest.mkString)
                 }
+   attributes = attributes.updated("body",toXHTML(blocks).toString)
    (attributes, blocks)
   }
 

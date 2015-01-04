@@ -2,7 +2,6 @@
 title: Анонс scala-koans code retreat
 description: Для тех, кто хочет ознакомиться со scala, появилась возможность сделать это участвуя в scala-koans code retreat.
 ---
-
 * Что:  scala-koans code retreat
 * Где:  work-and-roll: (Киев, ул. Большая Васильковская, 32Б, офис 8).
 * Когда:  2012-06-09  13:00 - 20:00
