@@ -5,5 +5,6 @@ class Configuration
 
    def markdownDir: String = "src/main/markdown" 
 
+   def outputDir: String = "target/site"
 
 }

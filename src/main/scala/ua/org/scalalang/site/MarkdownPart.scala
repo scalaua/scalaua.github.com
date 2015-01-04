@@ -5,7 +5,7 @@ import com.tristanhunt.knockoff._
 import com.tristanhunt.knockoff.DefaultDiscounter._
 import java.io.File
 
-case class MarkdownCompiledPage(title: String, date: Option[String], val path: Seq[String]) 
+case class MarkdownCompiledPage(attributes: Map[String,String], val path: Seq[String]) 
 
 
 object MarkdownPart
@@ -22,7 +22,8 @@ object MarkdownPart
       for(cf <- f.listFiles.toList;
           page <- processDirOrFile(cf,prefix :+ cf.getName) ) yield page
    } else if (f.getName.endsWith(".md")) {
-      val out = processFile(f, prefix );
+      val out = processFile(f, prefix )
+      Console.println("processed:"+out)
       List(out)
    } else {
       System.err.println(s"skippong file ${f.getCanonicalPath()} [extension is not .md]");
@@ -32,18 +33,71 @@ object MarkdownPart
  
   def processFile(f: File, prefix: Seq[String]): MarkdownCompiledPage =
   {
-     val blocks = knockoff(io.Source.fromFile(f).mkString)
-     val (title,date) = determinateTitleAndDate(blocks);
-     generateHtml(blocks, prefix);
-     MarkdownCompiledPage(title,date,prefix)
+     val (attributes, blocks) = parseFileAttributes(io.Source.fromFile(f), mkName(prefix) )
+     generateHtml(blocks, prefix)
+     MarkdownCompiledPage(attributes, prefix)
   }
 
-  def determinateTitleAndDate(blocks: Seq[Block]):(String,String) =
+  /**
+   * source is markdown file where before markdown we have set of name-value pairs
+   * (i.e. attribute:value) separated by horisontal lines from markdown.
+   * Tupical file content looks like:
+   * <pre>
+   *-----------------
+   * title: "document title"
+   * updated: "20-12-2012"
+   *----------------
+   * markdown document here.
+   * </pre>
+   *
+   * here we parse header and ret§
+   */
+  def parseFileAttributes(source: io.Source, fname: String) : (Map[String,String], Seq[Block]) =
   {
-    Console.println("blocks:"+blocks);
-    ("undefined","01-01-1970")
+   var i = 0;
+   var secondDashFound=false
+   var withoutAttributes=false
+   var attributes = Map[String,String]()
+   val rest = source.getLines.dropWhile{ line =>
+     Console.println(s"${i}:${line}")
+     if (i==0)  {
+       if (!isDash(line)) {
+         Console.println(s"first dash not found for ${fname}, assuming this is plain markdown")
+         withoutAttributes = true 
+       }
+     }  else if (isDash(line)) {
+         secondDashFound = true
+     } else {
+         val p = line.indexOf(":")
+         if (p == -1) {
+            Console.println("${fname}:${i} invalid attributr:value pair, assuming this is plain markdown")
+            withoutAttributes = true
+         } else {
+            val name = line.substring(0,p).trim
+            val value = line.substring(p+1).trim
+            attributes = attributes.updated(name,value)
+         }
+     }
+     i += 1 
+     !secondDashFound || withoutAttributes
+   }
+   val forsed = rest.toList // actually execute dropWhile
+   if (!secondDashFound) {
+     Console.println(s"second dash not found for ${fname}, assuming this is plain markdown")
+     withoutAttributes = true
+   }
+   val blocks = if (withoutAttributes) {
+                   knockoff(source.mkString)
+                } else {
+                   knockoff(rest.mkString)
+                }
+   (attributes, blocks)
   }
- 
+
+
+  def mkName(name: Seq[String]):String =
+       name mkString "/"
+
   def generateHtml(blocks:Seq[Block], prefix:Seq[String])
   {
     Console.println("html generation is not implemented yet")
@@ -54,5 +108,7 @@ object MarkdownPart
     Console.println(s"create outpud dir: ${prefix mkString "/"} ")
   }
 
+  def isDash(s:String):Boolean =
+    s.matches("^-+$")
 
 }

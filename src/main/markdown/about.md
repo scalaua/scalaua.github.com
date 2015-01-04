@@ -1,6 +1,7 @@
 ---
 title: О Скале
 updated: 2012-03-29
+
 ---
 
 <div class="image imageright">
