@@ -33,8 +33,7 @@ object Main
     for(articles <- grouped.get("articles");
         article <- articles) {
           val html = templates.html.article(article);
-          Console.println(s"html for ${article.path}");
-          Console.println(html);
+          writeToFile(configuration.outputDir + "/" + article("localUrl"),html.body)
     }
   }
 
@@ -74,6 +73,16 @@ object Main
                        }
                       )
                       
+  }
+
+  def writeToFile(fname:String, content: String): Unit =
+  {
+    val writer = new java.io.PrintWriter(new java.io.File(fname))
+    try {
+        writer.print(content);
+    } finally {
+        writer.close()
+    }
   }
 
   def mkdir(path:String): Unit =
