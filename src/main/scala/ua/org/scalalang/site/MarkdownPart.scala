@@ -6,6 +6,13 @@ import com.tristanhunt.knockoff.DefaultDiscounter._
 import java.io.File
 
 case class MarkdownCompiledPage(attributes: Map[String,String], val path: Seq[String]) 
+{
+  def apply(name:String):String =
+   attributes.get(name).getOrElse{
+      Console.println(s"attribute ${name} not found in template ${path.mkString("/")}");
+      s"[missing ${name}]"
+   }
+}
 
 
 object MarkdownPart
@@ -90,15 +97,35 @@ object MarkdownPart
      Console.println(s"second dash not found for ${fname}, assuming this is plain markdown")
      withoutAttributes = true
    }
+
    val blocks = if (withoutAttributes) {
                    knockoff(source.mkString)
                 } else {
                    knockoff(rest.mkString)
                 }
    attributes = attributes.updated("body",toXHTML(blocks).toString)
+
+   for(t <- timeInFilename(fname)) {
+       attributes = attributes.updated("ftime",t)
+       if (attributes.get("updated").isEmpty) {
+           attributes = attributes.updated("updated",t)
+       }
+   }
+
+   attributes = attributes.updated("localUrl",fname.substring(0,fname.length-2)+"html")
+
    (attributes, blocks)
   }
 
+  def timeInFilename(fname:String):Option[String] =
+  {
+    val lastPart = fname.split("/").last
+    val date ="""(\d\d\d\d)-(\d\d)-(\d\d)-.*""".r
+    lastPart match {
+          case date(year,month,day) => Some(s"${year}-${month}-${day}")
+          case _ => None
+    }
+  }  
 
   def mkName(name: Seq[String]):String =
        name mkString "/"

@@ -16,7 +16,26 @@ object Main
   def generateSite(markdownPages: Seq[MarkdownCompiledPage]):Unit =
   {
     copyResources()
-    //generatePages()
+    generatePages(markdownPages)
+  }
+
+  def generatePages(markdownPages: Seq[MarkdownCompiledPage]):Unit =
+  {
+    val grouped = markdownPages.groupBy{ page =>
+      if (page.path.length > 1) {
+          page.path(0)
+      } else {
+          "toplevel"
+      }
+    }
+    mkdir(configuration.outputDir+"/articles");
+
+    for(articles <- grouped.get("articles");
+        article <- articles) {
+          val html = templates.html.article(article);
+          Console.println(s"html for ${article.path}");
+          Console.println(html);
+    }
   }
 
   def copyResources(): Unit =
@@ -46,7 +65,6 @@ object Main
                            FileVisitResult.CONTINUE
                           }
   
-
                           override def visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult =
                           {
                             Files.copy(file, out.resolve(in relativize file), StandardCopyOption.REPLACE_EXISTING)
@@ -56,6 +74,16 @@ object Main
                        }
                       )
                       
+  }
+
+  def mkdir(path:String): Unit =
+  {
+    val f = new java.io.File(path);
+    if (!f.exists()) {
+        f.mkdir();
+    } else if (!f.isDirectory()) {
+        throw new IllegalStateException(s"file ${path} is not a directory");
+    }
   }
 
   lazy val configuration = new Configuration
