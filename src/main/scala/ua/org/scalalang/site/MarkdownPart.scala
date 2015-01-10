@@ -7,11 +7,17 @@ import java.io.StringWriter
 
 case class MarkdownCompiledPage(attributes: Map[String,String], val path: Seq[String]) 
 {
+
   def apply(name:String):String =
    attributes.get(name).getOrElse{
       Console.println(s"attribute ${name} not found in template ${path.mkString("/")}");
       s"[missing ${name}]"
    }
+
+
+  def get(name:String):Option[String] = 
+   attributes.get(name)
+
 }
 
 

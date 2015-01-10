@@ -4,6 +4,9 @@ import java.nio.file._
 import java.nio.file.attribute._
 import java.util.EnumSet
 
+import play.twirl.api._
+import templates._
+
 object Main
 {
 
@@ -29,21 +32,45 @@ object Main
       }
     }
 
-    articleDir("articles");
-    articleDir("meetups");
+    val meetups = grouped("meetups")
+    val articles = grouped("articles")
+
+    val top10All = topN(meetups ++ articles, 10)
+
+    articleDir("articles")
+    articleDir("meetups")
+
+    page("index.html","ScalaUA",html.home(top10All),".")
+    page("articles/index.html","ScalaUA",html.articles(articles),"..")
+    page("meetups/index.html","ScalaUA",html.articles(meetups),"..")
+
 
     def articleDir(dirname:String): Unit =
     {
      mkdir(configuration.outputDir+"/"+dirname)
      for(articles <- grouped.get(dirname);
         article <- articles) {
-          val internalHtml = templates.html.article(article);
-          val extHtml = templates.html.default(article("title"),internalHtml.body,"..")
-          writeToFile(configuration.outputDir + "/" + article("localUrl"),extHtml.body)
+          val internalHtml = html.article(article);
+          val extHtml = html.default(article("title"),internalHtml.body,"..")
+          val localUrl = article.get("localUrl").getOrElse{
+                val path = article.path mkString "/"
+                Console.println("missing localUrl for $path")
+                path+"-missing.html"
+          }
+          writePage(localUrl,extHtml.body)
      }
     }
 
+    def page(pageName: String, title: String, content: HtmlFormat.Appendable, topLevelPath: String): Unit =
+         writePage(pageName,html.default(title,content.body,topLevelPath).body)
+
   }
+
+  def topN(x:Seq[MarkdownCompiledPage],n:Int):Seq[MarkdownCompiledPage] =
+    x.sortWith(_("updated") > _("updated")).take(n)
+
+  def writePage(page:String, content: String): Unit =
+      writeToFile(configuration.outputDir + "/" + page, content)
 
   def writeToFile(fname:String, content: String): Unit =
   {

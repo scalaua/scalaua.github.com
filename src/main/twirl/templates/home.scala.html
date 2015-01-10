@@ -1,0 +1,17 @@
+@(articles:Seq[ua.org.scalalang.site.MarkdownCompiledPage])
+<section id="articles">
+@for(a <- articles) {
+<article>
+  <h1>
+    <span aria-hidden="true" class="title-forward-link icon-link"></span>
+    <a href=@{a("localUrl")}>@{a("title")}</a>
+  </h1>
+
+  <span class="date">@a("updated")</span>
+
+  <p class="summary">
+    @a("description")
+  </p>
+</article>
+}
+</section>
