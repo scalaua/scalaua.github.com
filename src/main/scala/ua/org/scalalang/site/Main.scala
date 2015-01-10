@@ -32,8 +32,8 @@ object Main
       }
     }
 
-    val meetups = grouped("meetups")
-    val articles = grouped("articles")
+    val meetups = byTime(grouped("meetups"))
+    val articles = byTime(grouped("articles"))
 
     val top10All = topN(meetups ++ articles, 10)
 
@@ -67,7 +67,10 @@ object Main
   }
 
   def topN(x:Seq[MarkdownCompiledPage],n:Int):Seq[MarkdownCompiledPage] =
-    x.sortWith(_("updated") > _("updated")).take(n)
+    byTime(x).take(n)
+
+  def byTime(x:Seq[MarkdownCompiledPage]):Seq[MarkdownCompiledPage] =
+    x.sortWith(_("updated") > _("updated"))
 
   def writePage(page:String, content: String): Unit =
       writeToFile(configuration.outputDir + "/" + page, content)

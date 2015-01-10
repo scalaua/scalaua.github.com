@@ -4,7 +4,7 @@
 @for(a <- articles) {
    <li>
     <span class="date">@a("updated")</span>
-    <a href=@{a("localUrl")}>@{a("title")}</a>
+    <a href="../@{a("localUrl")}">@{a("title")}</a>
    </li>
 }
 </ul>
