@@ -24,13 +24,7 @@ object Main
 
   def generatePages(markdownPages: Seq[MarkdownCompiledPage]):Unit =
   {
-    val grouped = markdownPages.groupBy{ page =>
-      if (page.path.length > 1) {
-          page.path(0)
-      } else {
-          "toplevel"
-      }
-    }
+    val grouped = markdownPages.groupBy{ _.path(0) }
 
     val meetups = byTime(grouped("meetups"))
     val articles = byTime(grouped("articles"))
@@ -43,6 +37,7 @@ object Main
     page("index.html","ScalaUA",html.home(top10All),".")
     page("articles/index.html","ScalaUA",html.articles(articles),"..")
     page("meetups/index.html","ScalaUA",html.articles(meetups),"..")
+    page("about/index.html","About",html.page(grouped("about.md").head),"..")
 
 
     def articleDir(dirname:String): Unit =

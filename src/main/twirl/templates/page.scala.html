@@ -1,0 +1,10 @@
+@(a:ua.org.scalalang.site.MarkdownCompiledPage)
+<article>
+    <h1>@a("title")</h1>
+    
+    <p class="date">@a("updated")</p>
+    
+    <section class="content">
+        @{Html(a("body"))}
+    </section>
+</article>

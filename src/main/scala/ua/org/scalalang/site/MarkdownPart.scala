@@ -31,7 +31,6 @@ object MarkdownPart
   {
    Console.println(s"processing ${f.getCanonicalPath()}")
    if (f.isDirectory) {
-      createOutputDir(prefix)
       for(cf <- f.listFiles.toList;
           page <- processDirOrFile(cf,prefix :+ cf.getName) ) yield page
    } else if (f.getName.endsWith(".md")) {
@@ -126,6 +125,7 @@ object MarkdownPart
    import scala.xml._
    import com.tristanhunt.knockoff.DefaultDiscounter._
    val blocks = knockoff(markdown)
+   Console.println("blocks:"+blocks)
    val xml = toXHTML(blocks)
    val sw = new StringWriter
    XML.write( sw, xml, "UTF-8", false, null )
@@ -147,15 +147,6 @@ object MarkdownPart
   def mkName(name: Seq[String]):String =
        name mkString "/"
 
-  //def generateHtml(blocks:Seq[Block], prefix:Seq[String])
-  //{
-  //  Console.println("html generation is not implemented yet")
-  //}
-
-  def createOutputDir(prefix: Seq[String]):Unit =
-  {
-    Console.println(s"create outpud dir: ${prefix mkString "/"} ")
-  }
 
   def isDash(s:String):Boolean =
     s.matches("^-+$")
