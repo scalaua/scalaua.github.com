@@ -8,9 +8,8 @@ description: Для тех, кто хочет ознакомиться со scal
 * Предварительные требования: нотебук с настроенным git; eclipse indigo; знакомство с каким-то из распространенных языков программирования.
 * Результаты: первоначальное знакомство с языком scala и стеком squeryl/play; возможность в дальнейшем получить приглашение на работу или субконтракт в scala-проекте.
 * Вместимость: 10 человек
-* Форма регистрации: [тут][reg]
+* Форма регистрации: [тут](https://docs.google.com/a/shevchenko.kiev.ua/spreadsheet/viewform?formkey=dEFKRGN3WGJId2l2SzRpcExlb0VCaWc6MQ#gid=0)
 
-Коаны - базовая часть основана на [scala-koans][scala-koans], дополнения для библиотек сделаны специально для данного события и будут опубликованы чуть позже, после 'обкатки'.
+Коаны - базовая часть основана на [scala-koans](http://www.scalakoans.org), дополнения для библиотек сделаны специально для данного события и будут опубликованы чуть позже, после 'обкатки'.
 
-[reg]: https://docs.google.com/a/shevchenko.kiev.ua/spreadsheet/viewform?formkey=dEFKRGN3WGJId2l2SzRpcExlb0VCaWc6MQ#gid=0
-[scala-koans]: http://www.scalakoans.org/
+

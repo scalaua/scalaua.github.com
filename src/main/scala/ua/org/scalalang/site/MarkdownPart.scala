@@ -1,9 +1,9 @@
 package ua.org.scalalang.site
 
 
-import com.tristanhunt.knockoff._
-import com.tristanhunt.knockoff.DefaultDiscounter._
+
 import java.io.File
+import java.io.StringWriter
 
 case class MarkdownCompiledPage(attributes: Map[String,String], val path: Seq[String]) 
 {
@@ -40,8 +40,7 @@ object MarkdownPart
  
   def processFile(f: File, prefix: Seq[String]): MarkdownCompiledPage =
   {
-     val (attributes, blocks) = parseFileAttributes(io.Source.fromFile(f), mkName(prefix) )
-     generateHtml(blocks, prefix)
+     val attributes = parseFileAttributes(io.Source.fromFile(f), mkName(prefix) )
      MarkdownCompiledPage(attributes, prefix)
   }
 
@@ -57,9 +56,10 @@ object MarkdownPart
    * markdown document here.
    * </pre>
    *
+   * markdown is passed to
    * here we parse header and ret§
    */
-  def parseFileAttributes(source: io.Source, fname: String) : (Map[String,String], Seq[Block]) =
+  def parseFileAttributes(source: io.Source, fname: String) : Map[String,String] =
   {
    var i = 0;
    var secondDashFound=false
@@ -98,12 +98,10 @@ object MarkdownPart
      withoutAttributes = true
    }
 
-   val blocks = if (withoutAttributes) {
-                   knockoff(source.mkString)
-                } else {
-                   knockoff(rest.mkString)
-                }
-   attributes = attributes.updated("body",toXHTML(blocks).toString)
+   val markdownLines = if (withoutAttributes) source else rest
+
+   attributes = attributes.updated("body",markdownToHtml(markdownLines mkString "\n"))
+
 
    for(t <- timeInFilename(fname)) {
        attributes = attributes.updated("ftime",t)
@@ -114,7 +112,20 @@ object MarkdownPart
 
    attributes = attributes.updated("localUrl",fname.substring(0,fname.length-2)+"html")
 
-   (attributes, blocks)
+   attributes
+  }
+
+  def markdownToHtml(markdown:String):String =
+  {
+   import scala.xml._
+   import com.tristanhunt.knockoff.DefaultDiscounter._
+   val blocks = knockoff(markdown)
+   val xml = toXHTML(blocks)
+   val sw = new StringWriter
+   XML.write( sw, xml, "UTF-8", false, null )
+   sw.toString
+   //val pegdown = new org.pegdown.PegDownProcessor();
+   //pegdown.markdownToHtml(markdownLines.mkString)
   }
 
   def timeInFilename(fname:String):Option[String] =
@@ -130,10 +141,10 @@ object MarkdownPart
   def mkName(name: Seq[String]):String =
        name mkString "/"
 
-  def generateHtml(blocks:Seq[Block], prefix:Seq[String])
-  {
-    Console.println("html generation is not implemented yet")
-  }
+  //def generateHtml(blocks:Seq[Block], prefix:Seq[String])
+  //{
+  //  Console.println("html generation is not implemented yet")
+  //}
 
   def createOutputDir(prefix: Seq[String]):Unit =
   {

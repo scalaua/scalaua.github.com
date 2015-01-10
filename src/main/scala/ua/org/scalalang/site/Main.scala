@@ -15,7 +15,7 @@ object Main
 
   def generateSite(markdownPages: Seq[MarkdownCompiledPage]):Unit =
   {
-    copyResources()
+    ResourcesPart.process()
     generatePages(markdownPages)
   }
 
@@ -28,51 +28,21 @@ object Main
           "toplevel"
       }
     }
-    mkdir(configuration.outputDir+"/articles");
 
-    for(articles <- grouped.get("articles");
+    articleDir("articles");
+    articleDir("meetups");
+
+    def articleDir(dirname:String): Unit =
+    {
+     mkdir(configuration.outputDir+"/"+dirname)
+     for(articles <- grouped.get(dirname);
         article <- articles) {
-          val html = templates.html.article(article);
-          writeToFile(configuration.outputDir + "/" + article("localUrl"),html.body)
+          val internalHtml = templates.html.article(article);
+          val extHtml = templates.html.default(article("title"),internalHtml.body,"..")
+          writeToFile(configuration.outputDir + "/" + article("localUrl"),extHtml.body)
+     }
     }
-  }
 
-  def copyResources(): Unit =
-  {
-    val in = FileSystems.getDefault().getPath("src","main","resources")
-    // getPath is a variadic fucntion with two parameters, call one througth array is not trivial
-    val outParts = configuration.outputDir.split("/");
-    val out = if (outParts.length==1) {
-                    FileSystems.getDefault().getPath(outParts(0));
-              } else {
-                    FileSystems.getDefault().getPath(outParts(0), outParts.toSeq.drop(1) :_* );
-              }
-    Files.walkFileTree(in, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Int.MaxValue, 
-                       new SimpleFileVisitor[Path] {
-
-                          override def preVisitDirectory(dir: Path, attrs: BasicFileAttributes): FileVisitResult =
-                          {
-                           val outdir = out resolve (in relativize dir)
-                           try {
-                             Files.copy(dir, outdir)
-                           } catch {
-                             case ex: FileAlreadyExistsException =>
-                               if (!Files.isDirectory(outdir)) {
-                                  throw ex
-                               }
-                           }
-                           FileVisitResult.CONTINUE
-                          }
-  
-                          override def visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult =
-                          {
-                            Files.copy(file, out.resolve(in relativize file), StandardCopyOption.REPLACE_EXISTING)
-                            FileVisitResult.CONTINUE
-                          }
-
-                       }
-                      )
-                      
   }
 
   def writeToFile(fname:String, content: String): Unit =

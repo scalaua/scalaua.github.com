@@ -1,10 +1,9 @@
 @(a:ua.org.scalalang.site.MarkdownCompiledPage)
-<article>
     <h1>@{a("title")}</h1>
     
-    <p class="date">@{a("publicationDates")}</p>
+    <p class="date">@{a("updated")}</p>
     
-    @{a("body")}
+    @{Html(a("body"))}
 
 <div style="float:right">
 	<!-- Place this tag where you want the +1 button to render -->
@@ -37,4 +36,3 @@
 </script>
 <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
 <a href="http://disqus.com" class="dsq-brlink">blog comments powered by <span class="logo-disqus">Disqus</span></a>
-</article>

@@ -1,4 +1,4 @@
-@(pageTitle:String, body: String)
+@(title:String, body:String, baseUrl:String)
 <!DOCTYPE html>
 <html><head>
     <meta charset="utf-8">
@@ -6,15 +6,15 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="CACHE-CONTROL" content="NO-CACHE" />
     <meta http-equiv="EXPIRES" content="Mon, 01 Jan 2000 00:00:01 GMT" />
-    <title>@pageTitle</title>
+    <title>@title</title>
     
-    <link rel="stylesheet" href="/css/main.css">
-    <link rel="stylesheet" href="/css/icons.css">
-    <link rel="stylesheet" href="/css/font.css">
+    <link rel="stylesheet" href="@baseUrl/css/main.css">
+    <link rel="stylesheet" href="@baseUrl/css/icons.css">
+    <link rel="stylesheet" href="@baseUrl/css/font.css">
     
     <link rel="alternate"
           type="application/atom+xml"
-          href="/articles.atom"
+          href="@baseUrl/articles.atom"
           title="Extralogical feed">
 
 <!--tracking-->
@@ -22,23 +22,23 @@
 
     <header id="header">
       <div class="wrapper">
-        <h1 id="title"><a href="/">ScalaUA</a></h1>
+        <h1 id="title"><a href="@baseUrl/">ScalaUA</a></h1>
         <div id="nav-wrapper">
         <ul id="navigation">
           <li>
-            <a href="/meetups">
+            <a href="@baseUrl/meetups">
               <span aria-hidden="true" data-icon="u"></span>
               Встречи
             </a>
           </li>
           <li>
-              <a href="/articles">
+              <a href="@baseUrl/articles">
                 <span aria-hidden="true" data-icon="T"></span>
                 Архив
               </a>
           </li>
           <li>
-            <a href="/about">
+            <a href="@baseUrl/about">
               <span aria-hidden="true" data-icon="W"></span>
               О&nbsp;Scala
             </a>
@@ -49,7 +49,7 @@
     </header>
 
     <section id="main" class="wrapper">
-       @body
+       @Html(body)
     </section>
     
     <footer id="footer" class="wrapper">
@@ -58,7 +58,7 @@
               <a href="http://feeds.feedburner.com/ScalaUa">
                 <img title="YT"
                      alt="feed"
-                     src="/images/rss.png" />
+                     src="@baseUrl/images/rss.png" />
               </a>
             </div>
         </p>
