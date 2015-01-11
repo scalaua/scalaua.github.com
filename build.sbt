@@ -29,4 +29,9 @@ serve := {
 // publish site to git
 libraryDependencies += "org.eclipse.jgit" % "org.eclipse.jgit" % "3.6.0.201412230720-r"
 
+lazy val publishSite = taskKey[Unit]("Publish generated site to github")
+
+publishSite := {
+  (run in Compile).toTask(" publishSite").value
+}
 
