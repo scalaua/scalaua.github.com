@@ -12,8 +12,16 @@ object Main
 
   def main(args:Array[String]):Unit =
   {
+    Console.println("args:"+args.toList)
+    val runServer = if (args.length > 0) {
+                        (args(0)=="server") 
+                    } else false
     val markdownPages = MarkdownPart.process()
     generateSite(markdownPages)
+    if (runServer) {
+       Console.println("starting embedded server on port ${configuration.embeddedServerPort}")
+       EmbeddedWebServer.run()
+    }
   }
 
   def generateSite(markdownPages: Seq[MarkdownCompiledPage]):Unit =

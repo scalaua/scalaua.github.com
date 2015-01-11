@@ -7,4 +7,6 @@ class Configuration
 
    def outputDir: String = "target/site"
 
+   def embeddedServerPort = 9000
+
 }
