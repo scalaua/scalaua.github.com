@@ -35,7 +35,6 @@ object MarkdownPart
           page <- processDirOrFile(cf,prefix :+ cf.getName) ) yield page
    } else if (f.getName.endsWith(".md")) {
       val out = processFile(f, prefix )
-      Console.println("processed:"+out)
       List(out)
    } else {
       System.err.println(s"skippong file ${f.getCanonicalPath()} [extension is not .md]");
@@ -74,12 +73,11 @@ object MarkdownPart
    val it = source.getLines()
    while(it.hasNext && !withoutAttributes) {
      val line = it.next
-     Console.println(s"${i}:${line}")
      if (i==0)  {
        if (!isDash(line)) {
          Console.println(s"first dash not found for ${fname}, assuming this is plain markdown")
          withoutAttributes = true 
-       }
+       } 
      }  else if (secondDashFound) {
          rest :+= line
      }  else if (isDash(line)) {
@@ -87,8 +85,10 @@ object MarkdownPart
      } else {
          val p = line.indexOf(":")
          if (p == -1) {
-            Console.println("${fname}:${i} invalid attributr:value pair, assuming this is plain markdown")
-            withoutAttributes = true
+            if (!line.isEmpty) {
+              Console.println("${fname}:${i} invalid attributr:value pair, assuming this is plain markdown")
+              withoutAttributes = true
+            }
          } else {
             val name = line.substring(0,p).trim
             val value = line.substring(p+1).trim
@@ -97,7 +97,6 @@ object MarkdownPart
      }
      i += 1 
    }
-   Console.println("rest="+rest)
    if (!secondDashFound) {
      Console.println(s"second dash not found for ${fname}, assuming this is plain markdown")
      withoutAttributes = true
@@ -125,7 +124,6 @@ object MarkdownPart
    import scala.xml._
    import com.tristanhunt.knockoff.DefaultDiscounter._
    val blocks = knockoff(markdown)
-   Console.println("blocks:"+blocks)
    val xml = toXHTML(blocks)
    val sw = new StringWriter
    XML.write( sw, xml, "UTF-8", false, null )

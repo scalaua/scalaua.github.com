@@ -14,7 +14,6 @@ object Main
 
   def main(args:Array[String]):Unit =
   {
-    Console.println("args:"+args.toList)
     val List(runServer, publishSite) = if (args.length > 0) {
                                         List("server","publishSite") map (_ == args(0))
                                        } else List(false,false)
@@ -58,6 +57,7 @@ object Main
     page("articles/index.html","ScalaUA",html.articles(articles),"..")
     page("meetups/index.html","ScalaUA",html.articles(meetups),"..")
     page("about/index.html","About",html.page(grouped("about.md").head),"..")
+    page("404.html","404",html.page(grouped("404.md").head),".")
 
 
     def articleDir(dirname:String): Unit =
