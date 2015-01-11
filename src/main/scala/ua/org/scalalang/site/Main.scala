@@ -3,6 +3,8 @@ package ua.org.scalalang.site
 import java.nio.file._
 import java.nio.file.attribute._
 import java.util.EnumSet
+import java.io.File
+import org.apache.commons.io.FileUtils
 
 import play.twirl.api._
 import templates._
@@ -13,22 +15,32 @@ object Main
   def main(args:Array[String]):Unit =
   {
     Console.println("args:"+args.toList)
-    val runServer = if (args.length > 0) {
-                        (args(0)=="server") 
-                    } else false
+    val List(runServer, publishSite) = if (args.length > 0) {
+                                        List("server","publishSite") map (_ == args(0))
+                                       } else List(false,false)
     val markdownPages = MarkdownPart.process()
     generateSite(markdownPages)
     if (runServer) {
        Console.println("starting embedded server on port ${configuration.embeddedServerPort}")
        EmbeddedWebServer.run()
     }
+    if (publishSite) {
+       Console.println(s"publish site to ${Main.configuration.repoUrl}/${Main.configuration.siteBranch}")
+       GitPart.publishGenerated()
+    }
   }
 
   def generateSite(markdownPages: Seq[MarkdownCompiledPage]):Unit =
   {
-    ResourcesPart.process()
+    copyResources()
     generatePages(markdownPages)
   }
+
+  def  copyResources(): Unit =
+  {
+    FileUtils.copyDirectory(new File("src/main/resources"),
+                            new File(Main.configuration.outputDir))
+  } 
 
   def generatePages(markdownPages: Seq[MarkdownCompiledPage]):Unit =
   {
@@ -50,7 +62,7 @@ object Main
 
     def articleDir(dirname:String): Unit =
     {
-     mkdir(configuration.outputDir+"/"+dirname)
+     FileUtils.forceMkdir(new File(Main.configuration.outputDir+"/"+dirname))
      for(articles <- grouped.get(dirname);
         article <- articles) {
           val internalHtml = html.article(article);
@@ -76,26 +88,8 @@ object Main
     x.sortWith(_("updated") > _("updated"))
 
   def writePage(page:String, content: String): Unit =
-      writeToFile(configuration.outputDir + "/" + page, content)
-
-  def writeToFile(fname:String, content: String): Unit =
   {
-    val writer = new java.io.PrintWriter(new java.io.File(fname))
-    try {
-        writer.print(content);
-    } finally {
-        writer.close()
-    }
-  }
-
-  def mkdir(path:String): Unit =
-  {
-    val f = new java.io.File(path);
-    if (!f.exists()) {
-        f.mkdir();
-    } else if (!f.isDirectory()) {
-        throw new IllegalStateException(s"file ${path} is not a directory");
-    }
+      FileUtils.write(new File(configuration.outputDir + "/" +page), content)
   }
 
   lazy val configuration = new Configuration
