@@ -13,7 +13,7 @@ class Configuration
    def tmpRepoDir = "target/tmp1"
    def repoUrl = "git@github.com:scalaua/scalaua.github.com.git"
    def repoName = "scalaua.github.com"
-   def siteBranch = "master1"
+   def siteBranch = "master"
 
 
 }
