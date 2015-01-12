@@ -88,9 +88,7 @@ object Main
     x.sortWith(_("updated") > _("updated"))
 
   def writePage(page:String, content: String): Unit =
-  {
       FileUtils.write(new File(configuration.outputDir + "/" +page), content)
-  }
 
   lazy val configuration = new Configuration
 
