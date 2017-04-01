@@ -2,7 +2,7 @@
 title: Ukrainian Skala Language Shim
 description: Announce of the Ukrainian NLS development.
 ---
-We support the chosen direction of future skala development and propose the next step in the evolution of europian programming language: National Language Shim.
+We support the chosen direction of future skala development, as specified [in this announce](http://scala-lang.org/blog/2017/04/01/announcing-skala.html), and propose the next step in the evolution of europian programming language: National Language Shim.
 Example:
 
 ```
