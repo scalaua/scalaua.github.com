@@ -7,6 +7,7 @@ version := "0.1"
 
 scalaVersion:="2.11.4"
 
+//TODO: move to another markdown parser.
 libraryDependencies += "com.tristanhunt" %% "knockoff" % "0.8.3"
 
 libraryDependencies += "commons-io" % "commons-io" % "2.4"
