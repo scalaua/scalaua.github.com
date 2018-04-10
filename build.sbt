@@ -5,12 +5,12 @@ name := "site"
 
 version := "0.1"
 
-scalaVersion:="2.11.4"
+scalaVersion:="2.11.5"
 
 //TODO: move to another markdown parser.
 libraryDependencies += "com.tristanhunt" %% "knockoff" % "0.8.3"
 
-libraryDependencies += "commons-io" % "commons-io" % "2.4"
+libraryDependencies += "commons-io" % "commons-io" % "2.6"
 
 
 lazy val root = (project in file(".")).enablePlugins(SbtTwirl)
@@ -28,7 +28,7 @@ serve := {
 
 
 // publish site to git
-libraryDependencies += "org.eclipse.jgit" % "org.eclipse.jgit" % "3.6.0.201412230720-r"
+libraryDependencies += "org.eclipse.jgit" % "org.eclipse.jgit" % "4.11.0.201803080745-r"
 
 lazy val publishSite = taskKey[Unit]("Publish generated site to github")
 
