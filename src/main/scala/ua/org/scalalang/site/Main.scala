@@ -20,7 +20,7 @@ object Main
     val markdownPages = MarkdownPart.process()
     generateSite(markdownPages)
     if (runServer) {
-       Console.println("starting embedded server on port ${configuration.embeddedServerPort}")
+       Console.println(s"starting embedded server on port ${configuration.embeddedServerPort}")
        EmbeddedWebServer.run()
     }
     if (publishSite) {
